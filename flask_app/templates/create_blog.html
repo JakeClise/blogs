@@ -14,6 +14,13 @@
         <a href="/logout" class="p-3">Logout</a>
         <h1>Welcome {{user.first_name}} !</h1>
     </div>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <p class="text-danger text-center">{{message}}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <div class="container mt-5" style="width: 1000px;">
         <form action="/create/blog" method="post">
             <h2>New Blog</h2>

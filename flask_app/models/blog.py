@@ -1,5 +1,5 @@
 from flask_app.config.mysqlconnection import connectToMySQL
-from flask_app.models.user import User
+from flask_app.models import user
 from flask import flash
 
 class Blog:
@@ -68,6 +68,41 @@ class Blog:
             }
 
             one_blog = cls(blog_data)
-            one_blog.creator = User(user_data)
+            one_blog.creator = user.User(user_data)
             blogs.append(one_blog)
         return blogs
+    
+    @classmethod
+    def get_one_blog_with_user(cls, data):
+        query = """
+            SELECT * FROM blogs JOIN users ON blogs.user_id = users.id 
+            WHERE blogs.id = %(id)s;
+        """
+        results = connectToMySQL('blogs_schema').query_db(query, data)
+        one_blog = cls(results[0])
+        
+        user_data = {
+            "id": results[0]['users.id'],
+            "first_name": results[0]['first_name'],
+            "last_name": results[0]['last_name'],
+            "email": results[0]['email'],
+            "password": results[0]['password'],
+            "created_at": results[0]['users.created_at'],
+            "updated_at": results[0]['users.updated_at']
+        }
+
+        one_blog.creator = user.User(user_data)
+        return one_blog
+
+    @classmethod
+    def update_blog(cls, data):
+        query = """
+            UPDATE blogs SET name = %(name)s, topic = %(topic)s, description = %(description)s
+            WHERE blogs.id = %(id)s;
+        """
+        return connectToMySQL('blogs_schema').query_db(query, data)
+    
+    @classmethod
+    def delete_blog(cls, data):
+        query = "DELETE FROM blogs WHERE blogs.id = %(id)s;"
+        return connectToMySQL('blogs_schema').query_db(query, data)

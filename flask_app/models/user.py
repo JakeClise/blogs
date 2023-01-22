@@ -1,4 +1,5 @@
 from flask_app.config.mysqlconnection import connectToMySQL
+from flask_app.models.blog import Blog
 from flask import flash
 import re
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.t_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
@@ -13,6 +14,7 @@ class User:
         self.password = data['password']
         self.created_at = data['created_at']
         self.updated_at = data['updated_at']
+        self.blogs = []
         
     @staticmethod
     def validate_register(user):
@@ -33,10 +35,6 @@ class User:
             flash("Passwords do not match!")
             is_valid = False
         return is_valid
-    
-    @staticmethod
-    def validate_login():
-        pass
 
     @classmethod
     def save_user(cls, data):
@@ -63,3 +61,25 @@ class User:
         """
         result = connectToMySQL('blogs_schema').query_db(query, data)
         return cls(result[0])
+    
+    @classmethod 
+    def get_one_user_with_blogs(cls, data):
+        query = """
+            SELECT * FROM users LEFT JOIN blogs ON
+            blogs.user_id = users.id WHERE users.id = %(id)s;
+        """
+        results = connectToMySQL('blogs_schema').query_db(query, data)
+        one_user = cls(results[0])
+        for row in results:
+            blog_data = {
+                "id": row['blogs.id'],
+                "user_id": row["user_id"],
+                "name": row["name"],
+                "topic": row['topic'],
+                "description": row['description'],
+                "created_at": row['blogs.created_at'],
+                "updated_at": row['blogs.updated_at']
+            }
+            one_blog = Blog(blog_data)
+            one_user.blogs.append(one_blog)
+        return one_user

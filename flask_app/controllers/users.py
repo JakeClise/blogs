@@ -50,6 +50,10 @@ def login():
 
 @app.route('/logout')
 def logout():
+    if 'user_id' not in session:
+        return redirect('/')
     session.clear()
     return redirect('/')
+
+
     
