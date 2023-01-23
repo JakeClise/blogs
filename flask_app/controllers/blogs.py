@@ -32,16 +32,11 @@ def create_blog():
 def user_profile():
     if 'user_id' not in session:
         return redirect('/')
-    """
-    data = {
-        'id': session['user_id']
-    }
-    """
     id = {
         "id": session['user_id']
     }
     user = User.get_one_user_with_blogs(id)
-    return render_template('/user_account.html', user = user)
+    return render_template('user_account.html', user = user)
 
 @app.route('/edit/<int:id>')
 def edit_blog(id):
