@@ -40,17 +40,39 @@ def user_profile():
 
 @app.route('/edit/<int:id>')
 def edit_blog(id):
-
-    return render_template('edit_blog.html')
+    if 'user_id' not in session:
+        return redirect('/')
+    data = {
+        'id': session['user_id']
+    }
+    blog_id = {
+        "id": id
+    }
+    one_blog = Blog.get_one_blog_with_user(blog_id)
+    return render_template('edit_blog.html', one_blog = one_blog, user = User.get_user_by_id(data))
 
 @app.route('/update/<int:id>', methods = ["POST"])
 def update_blog(id):
-
-    return redirect('/user/account')
+    if 'user_id' not in session:
+        return redirect('/')
+    if not Blog.validate_blog(request.form):
+        return redirect('/new/blog')
+    blog_data = {
+        "id": id,
+        "user_id": session['user_id'],
+        "name": request.form['name'],
+        "topic": request.form['topic'],
+        "description": request.form['description']
+    }
+    Blog.update_blog(blog_data)
+    return redirect('/home')
 
 @app.route('/delete/<int:id>')
 def delete_blog(id):
-
+    blog_id = {
+        "id": id
+    }
+    Blog.delete_blog(blog_id)
     return redirect('/user/account')
 
 @app.route('/show/<int:id>')
